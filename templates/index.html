@@ -40,10 +40,12 @@
         </div>
     </div>
 
+    <!-- Mouse Tracking Control -->
+    <h2>Mouse Tracking</h2>
+    <button id="toggle-tracking">Start Tracking</button>
+
     <script>
         var socket = io.connect("http://" + document.domain + ":5000");
-        // var socket = io.connect("http://10.166.94.127:5000");
-        
 
         // Store key states to prevent duplicate press events
         var keyStates = {};
@@ -79,6 +81,32 @@
             if (keyMap[event.key]) {
                 keyStates[event.key] = false;
                 sendControl(keyMap[event.key], "release");
+            }
+        });
+
+     
+
+        // Mouse tracking
+        let tracking = false;
+
+        function toggleTracking() {
+            tracking = !tracking;
+            console.log(tracking)
+            document.getElementById("toggle-tracking").innerText = tracking ? "Stop Tracking (esc)" : "Start Tracking";
+        }
+        
+        document.getElementById("toggle-tracking").addEventListener("click", toggleTracking);
+        
+        // Handle escape out of mouse tracking mode
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "Escape" && tracking) {
+                toggleTracking();
+            }
+        });
+
+        document.addEventListener("mousemove", function(event) {
+            if (tracking) {
+                socket.emit("mouse_move", { x: event.clientX, y: event.clientY });
             }
         });
     </script>

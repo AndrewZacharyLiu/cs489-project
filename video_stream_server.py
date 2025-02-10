@@ -51,6 +51,12 @@ def handle_motor_control(data):
     # elif direction == "up" and state == "release":
     #     stop_motor()
 
+@socketio.on('mouse_move')
+def handle_mouse_move(data):
+    print(f"Mouse moved: {data}")  # Logs mouse movement
+    # socketio.emit('mouse_position', data)  # Broadcast position to all clients if needed
+
+
 if __name__ == "__main__":
     eventlet.spawn(generate_video)  # Run video stream in a separate thread
     socketio.run(app, host="0.0.0.0", port=5000)
