@@ -31,7 +31,7 @@ while True:
         try:
             pass
             # Perform face recognition
-            result = DeepFace.find(face_roi, db_path="faces", enforce_detection=False)
+            result = DeepFace.find(face_roi, db_path="faces", enforce_detection=False, silent=True)
             if len(result) > 0 and not result[0].empty:
                 recognized_name = result[0]["identity"][0].split("/")[-1]
                 print(recognized_name)
