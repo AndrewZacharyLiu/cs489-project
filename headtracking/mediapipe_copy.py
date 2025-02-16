@@ -15,7 +15,7 @@ class ForeheadTracking:
         )
 
         # Video Setup
-        self.cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+        self.cap = cv2.VideoCapture(0)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 
@@ -78,6 +78,19 @@ class ForeheadTracking:
 
             # Draw red dot for predicted forehead position
             cv2.circle(frame, (predicted_x, predicted_y), 4, (0, 0, 255), -1)
+
+        # FPS Display
+        current_time = time.time()
+        fps = 1.0 / (current_time - self.prev_time)
+        self.prev_time = current_time
+        cv2.putText(frame, f"FPS: {fps:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+        #cv2.imshow("Kalman Filter - Constant Velocity (Forehead Tracking)", frame)
+
+        # FPS Limiter
+        #elapsed_time = time.time() - start_time
+        #sleep_time = max(0, FRAME_TIME - elapsed_time)
+        #time.sleep(sleep_time)
 
 
 
