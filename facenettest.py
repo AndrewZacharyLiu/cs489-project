@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 from scipy.spatial.distance import cosine
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 from PIL import Image
 import os
 
