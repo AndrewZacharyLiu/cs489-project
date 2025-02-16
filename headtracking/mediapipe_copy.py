@@ -46,14 +46,19 @@ class ForeheadTracking:
 
         self.initialized = False
         self.prev_time = time.time()
+        self.frame_count = 0
 
     def track_forehead(self):
+        start_time = time.time()
         ret, frame = self.cap.read()
         if not ret:
             return None
 
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        last_results = self.face_mesh.process(rgb_frame)
+        self.frame_count += 1
+
+        if self.frame_count % 3 == 0:
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            last_results = self.face_mesh.process(rgb_frame)
 
         if last_results and last_results.multi_face_landmarks:
             for face_landmarks in last_results.multi_face_landmarks:
