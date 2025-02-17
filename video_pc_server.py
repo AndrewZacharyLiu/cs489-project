@@ -20,7 +20,7 @@ def index():
 
 def generate_video():
     while True:
-        frame = tracker.track_forehead()
+        frame, command = tracker.track_forehead()
         if frame is None:
             print("[WARN] No frame captured")
             continue
