@@ -1,116 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raspberry Pi Video Stream & Control</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <style>
-        #controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 20px;
-        }
-        .control-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        button {
-            padding: 15px 30px;
-            font-size: 20px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-    <h1>Live Video Stream</h1>
-    /*
-<img id="video-stream" src="" width="640" height="480" />
-*/
-    <h2>Motor Controls</h2>
-    <div id="controls">
-        <div class="control-row">
-            <button id="btn-up" onmousedown="sendControl('up', 'press')" onmouseup="sendControl('up', 'release')">Up</button>
-        </div>
-        <div class="control-row">
-            <button id="btn-left" onmousedown="sendControl('left', 'press')" onmouseup="sendControl('left', 'release')">Left</button>
-            <button id="btn-down" onmousedown="sendControl('down', 'press')" onmouseup="sendControl('down', 'release')">Down</button>
-            <button id="btn-right" onmousedown="sendControl('right', 'press')" onmouseup="sendControl('right', 'release')">Right</button>
-        </div>
-    </div>
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0" />
+		<title>Raspberry Pi Video Stream & Control</title>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+		<style>
+			#controls {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				margin-top: 20px;
+			}
+			.control-row {
+				display: flex;
+				gap: 10px;
+				margin-bottom: 10px;
+			}
+			button {
+				padding: 15px 30px;
+				font-size: 20px;
+				cursor: pointer;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Live Video Stream</h1>
+		/*
+		<img
+			id="video-stream"
+			src=""
+			width="640"
+			height="480" />
+		*/
+		<h2>Motor Controls</h2>
+		<div id="controls">
+			<div class="control-row">
+				<button
+					id="btn-up"
+					onmousedown="sendControl('up', 'press')"
+					onmouseup="sendControl('up', 'release')">
+					Up
+				</button>
+			</div>
+			<div class="control-row">
+				<button
+					id="btn-left"
+					onmousedown="sendControl('left', 'press')"
+					onmouseup="sendControl('left', 'release')">
+					Left
+				</button>
+				<button
+					id="btn-down"
+					onmousedown="sendControl('down', 'press')"
+					onmouseup="sendControl('down', 'release')">
+					Down
+				</button>
+				<button
+					id="btn-right"
+					onmousedown="sendControl('right', 'press')"
+					onmouseup="sendControl('right', 'release')">
+					Right
+				</button>
+			</div>
+		</div>
 
-    <!-- Mouse Tracking Control -->
-    <h2>Mouse Tracking</h2>
-    <button id="toggle-tracking">Start Tracking</button>
+		<!-- Mouse Tracking Control -->
+		<h2>Mouse Tracking</h2>
+		<button id="toggle-tracking">Start Tracking</button>
 
-    <script>
-        // var socket = io.connect("http://" + document.domain + ":5000");
-	var socket = io.connect("http://10.150.27.210:5000")
+		<script>
+			var socket = io.connect('http://' + document.domain + ':5000');
+			/*// var socket = io.connect('http://10.150.27.210:5000');
+			var socket = io.connect('http://localhost:5000', {
+				transports: ['websocket'],
+			});*/
 
-        // Store key states to prevent duplicate press events
-        var keyStates = {};
+			// Store key states to prevent duplicate press events
+			var keyStates = {};
 
-        // Receive and display video stream
-        socket.on('video_stream', function (data) {
-            document.getElementById('video-stream').src = 'data:image/jpeg;base64,' + data.image;
-        });
+			// Receive and display video stream
+			socket.on('video_stream', function (data) {
+				document.getElementById('video-stream').src =
+					'data:image/jpeg;base64,' + data.image;
+			});
 
-        // Send motor control signals
-        function sendControl(direction, state) {
-            socket.emit('motor_control', { direction: direction, state: state });
-        }
+			// Send motor control signals
+			function sendControl(direction, state) {
+				socket.emit('motor_control', {
+					direction: direction,
+					state: state,
+				});
+			}
 
-        // Map keys to motor directions
-        var keyMap = {
-            "ArrowUp": "up",
-            "ArrowDown": "down",
-            "ArrowLeft": "left",
-            "ArrowRight": "right"
-        };
+			// Map keys to motor directions
+			var keyMap = {
+				ArrowUp: 'up',
+				ArrowDown: 'down',
+				ArrowLeft: 'left',
+				ArrowRight: 'right',
+			};
 
-        // Handle key press
-        document.addEventListener("keydown", function(event) {
-            if (keyMap[event.key] && !keyStates[event.key]) {
-                keyStates[event.key] = true;  // Prevent duplicate presses
-                sendControl(keyMap[event.key], "press");
-            }
-        });
+			// Handle key press
+			document.addEventListener('keydown', function (event) {
+				if (keyMap[event.key] && !keyStates[event.key]) {
+					keyStates[event.key] = true; // Prevent duplicate presses
+					sendControl(keyMap[event.key], 'press');
+				}
+			});
 
-        // Handle key release
-        document.addEventListener("keyup", function(event) {
-            if (keyMap[event.key]) {
-                keyStates[event.key] = false;
-                sendControl(keyMap[event.key], "release");
-            }
-        });
+			// Handle key release
+			document.addEventListener('keyup', function (event) {
+				if (keyMap[event.key]) {
+					keyStates[event.key] = false;
+					sendControl(keyMap[event.key], 'release');
+				}
+			});
 
-     
+			// Mouse tracking
+			let tracking = false;
 
-        // Mouse tracking
-        let tracking = false;
+			function toggleTracking() {
+				tracking = !tracking;
+				console.log(tracking);
+				document.getElementById('toggle-tracking').innerText = tracking
+					? 'Stop Tracking (esc)'
+					: 'Start Tracking';
+			}
 
-        function toggleTracking() {
-            tracking = !tracking;
-            console.log(tracking)
-            document.getElementById("toggle-tracking").innerText = tracking ? "Stop Tracking (esc)" : "Start Tracking";
-        }
-        
-        document.getElementById("toggle-tracking").addEventListener("click", toggleTracking);
-        
-        // Handle escape out of mouse tracking mode
-        document.addEventListener("keydown", function(event) {
-            if (event.key === "Escape" && tracking) {
-                toggleTracking();
-            }
-        });
+			document
+				.getElementById('toggle-tracking')
+				.addEventListener('click', toggleTracking);
 
-        document.addEventListener("mousemove", function(event) {
-            if (tracking) {
-                socket.emit("mouse_move", { x: event.clientX, y: event.clientY });
-            }
-        });
-    </script>
-</body>
+			// Handle escape out of mouse tracking mode
+			document.addEventListener('keydown', function (event) {
+				if (event.key === 'Escape' && tracking) {
+					toggleTracking();
+				}
+			});
+
+			document.addEventListener('mousemove', function (event) {
+				if (tracking) {
+					socket.emit('mouse_move', {
+						x: event.clientX,
+						y: event.clientY,
+					});
+				}
+			});
+		</script>
+	</body>
 </html>

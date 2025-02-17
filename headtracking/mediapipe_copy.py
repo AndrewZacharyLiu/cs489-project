@@ -15,7 +15,8 @@ class ForeheadTracking:
         )
 
         # Video Setup
-        self.cap = cv2.VideoCapture(0)
+        #self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 
