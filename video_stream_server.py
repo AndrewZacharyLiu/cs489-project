@@ -8,6 +8,7 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 import threading
 import time
+from headtracking.mediapipe_copy import ForeheadTracking
 
 from servo.servo_control import ContinuousServoController
 
@@ -130,4 +131,6 @@ if __name__ == "__main__":
     motorX = ContinuousServoController(18)
     eventlet.spawn(stop_motor_if_idle)
     print("starting run")
+    track = ForeheadTracking()
+    frame = track.track_forehead()
     socketio.run(app, host="0.0.0.0", port=5000)
