@@ -1,7 +1,7 @@
 import eventlet
 eventlet.monkey_patch()
 
-#import cv2
+import cv2
 import base64
 import numpy as np
 from flask import Flask, render_template
@@ -14,7 +14,8 @@ from servo.servo_control import ContinuousServoController
 
 last_mouse_move_time = None
 MOUSE_TIMEOUT = 0.15
-
+angle = 90
+video_tracking = True
 
 # Flask setup
 app = Flask(__name__)
@@ -27,23 +28,40 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 def index():
     return render_template('index.html')
 
+def move_turret(command_array):
+    if (command_array is None or len(command_array) <= 0):
+        return
+    if (command_array[0] == "Fire"):
+        print("Fire") # TODO: replace with actual fire logic
+        return
+    if (command_array[0] == "Left"):
+        pass #TODO: left movement
+    elif (command_array[0] == "Right"):
+        pass #TODO: right movement
+
+    if (command_array[1] == "Up"):
+        angle += float(command_array[2])
+        set_servo_angle(angle)
+    elif (command_array[1] == "Down"):
+        angle -= float(command_array[2])
+        set_servo_angle(angle)
+
+    
 def generate_video():
+    global angle
+    global video_tracking
     while True:
-        success, frame = cap.read()
-        if not success:
+        frame, command = track.track_forehead()
+        if frame is None:
+            print("[WARN] No frame captured")
             continue
-
-        # Apply OpenCV processing (optional)
-        # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # Example: Convert to grayscale
-
-        # Encode frame as base64 for sending
-        _, buffer = cv2.imencode('.jpg', frame)
-        jpg_as_text = base64.b64encode(buffer).decode('utf-8')
-
-        # Send the frame to clients
-        socketio.emit('video_stream', {'image': jpg_as_text})
-
-        eventlet.sleep(0.05)  # Small delay to control frame rate
+        if frame is not None:
+            _, buffer = cv2.imencode('.jpg', frame)
+            jpg_as_text = base64.b64encode(buffer).decode('utf-8')
+            socketio.emit('video_stream', {'image': jpg_as_text})
+        if (video_tracking and command):
+            move_turret(command.split(','))
+        eventlet.sleep(0.02)  # 20 FPS cap
 
 @socketio.on('motor_control')
 def handle_motor_control(data):
@@ -132,5 +150,8 @@ if __name__ == "__main__":
     eventlet.spawn(stop_motor_if_idle)
     print("starting run")
     track = ForeheadTracking()
+
+    angle = 90
+    set_servo_angle(angle)
     frame = track.track_forehead()
     socketio.run(app, host="0.0.0.0", port=5000)

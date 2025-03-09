@@ -55,6 +55,11 @@ class ForeheadTracking:
         self.rgb_frame = None
         self.last_results = None
 
+    def calculate_degree_offset(predicted_y, center_y, frame_height=240, vertical_fov=55.8):
+        degrees_per_pixel = vertical_fov / frame_height
+        degree_offset = (predicted_y - center_y) * degrees_per_pixel
+        return abs(degree_offset)
+
     def track_forehead(self):
         start_time = time.time()
         command = ""
@@ -102,14 +107,18 @@ class ForeheadTracking:
                 command += "Fire"
             else:
                 if predicted_x < center_x:
-                    command += "Left"
+                    command += "Left,"
                 elif predicted_x > center_x:
-                    command += "Right"
+                    command += "Right,"
+                else:
+                    command += "XGood,"
                 
                 if predicted_y < center_y:
-                    command += "Up"
+                    command += "Up," + str(self.calculate_degree_offset(predicted_y, center_y))
                 elif predicted_y > center_y:
-                    command += "Down"
+                    command += "Down," + str(self.calculate_degree_offset(predicted_y, center_y))
+                else:
+                    command += "YGood"
             cv2.putText(frame, command, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
 
