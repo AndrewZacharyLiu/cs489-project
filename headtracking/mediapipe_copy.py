@@ -15,7 +15,7 @@ class ForeheadTracking:
         )
 
         # Video Setup
-        self.cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+        self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 
@@ -70,7 +70,6 @@ class ForeheadTracking:
         self.frame_count += 1
 
         if self.frame_count % 3 == 0:
-            self.last_results = None
             self.rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             self.last_results = self.face_mesh.process(self.rgb_frame)
 
@@ -89,7 +88,7 @@ class ForeheadTracking:
                 measurement = np.array([[np.float32(forehead_x)], [np.float32(forehead_y)]])
                 self.kalman.correct(measurement)
 
-        if self.initialized and self.last_results:
+        if self.initialized and self.last_results and self.last_results.multi_face_landmarks:
             # Predict position using Kalman filter
             predicted = self.kalman.predict()
             predicted_x = int(predicted[0])
