@@ -65,6 +65,7 @@ class ForeheadTracking:
         self.frame_count += 1
 
         if self.frame_count % 3 == 0:
+            self.last_results = None
             self.rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             self.last_results = self.face_mesh.process(self.rgb_frame)
 
@@ -83,7 +84,7 @@ class ForeheadTracking:
                 measurement = np.array([[np.float32(forehead_x)], [np.float32(forehead_y)]])
                 self.kalman.correct(measurement)
 
-        if self.initialized:
+        if self.initialized and self.last_results:
             # Predict position using Kalman filter
             predicted = self.kalman.predict()
             predicted_x = int(predicted[0])
