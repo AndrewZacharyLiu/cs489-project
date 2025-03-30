@@ -16,7 +16,7 @@ class ForeheadTracking:
         )
 
         # Video Setup
-        self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        self.cap = cv2.VideoCapture(0)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 
@@ -56,7 +56,7 @@ class ForeheadTracking:
         self.rgb_frame = None
         self.last_results = None
 
-    def calculate_vertical_degree_offset(self, predicted_y, center_y, frame_height=240, half_vertical_fov=40.595):
+    def calculate_vertical_degree_offset(self, predicted_y, center_y, frame_height=480, half_vertical_fov=40.595):
         half_vertical_fov_radians = math.radians(half_vertical_fov)
         z = ((frame_height/2) / math.tan(half_vertical_fov_radians)) # "distance from projection plane"
 
@@ -64,10 +64,10 @@ class ForeheadTracking:
 
         #if (predicted_y - center_y > 0):
         #    res = -res
-        
+
         return round(res)
-    
-    def calculate_horizontal_degree_offset(self, predicted_x, center_x, frame_width=320, half_horizontal_fov=48.805):
+
+    def calculate_horizontal_degree_offset(self, predicted_x, center_x, frame_width=640, half_horizontal_fov=48.805):
         half_horziontal_fov_radians = math.radians(half_horizontal_fov)
         z = ((frame_width/2) / math.tan(half_horziontal_fov_radians)) # "distance from projection plane"
 
@@ -75,8 +75,8 @@ class ForeheadTracking:
 
         #if (predicted_x - center_x < 0):
         #    res = -res
-        
-        print(f"Predicted x: {predicted_x}, Center x: {center_x}, Offset: {round(res)}")
+
+        #print(f"Predicted x: {predicted_x}, Center x: {center_x}, Offset: {round(res)}")
         return round(res)
 
     def track_forehead(self):
@@ -130,7 +130,7 @@ class ForeheadTracking:
                     command += "Right," + str(self.calculate_horizontal_degree_offset(predicted_x, center_x)) + ","
                 else:
                     command += "XGood,0,"
-                
+
                 if predicted_y < center_y:
                     command += "Up," + str(self.calculate_vertical_degree_offset(predicted_y, center_y))
                 elif predicted_y > center_y:
@@ -145,7 +145,7 @@ class ForeheadTracking:
         fps = 1.0 / (current_time - self.prev_time)
         self.prev_time = current_time
         cv2.putText(frame, f"FPS: {fps:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        
+
 
         #cv2.imshow("Kalman Filter - Constant Velocity (Forehead Tracking)", frame)
 
@@ -158,8 +158,7 @@ class ForeheadTracking:
 
         # Return the processed frame
         return frame, command
-    
+
     def deconstruct(self):
         self.cap.release()
         cv2.destroyAllWindows()
-

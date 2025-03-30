@@ -9,7 +9,7 @@ from flask_socketio import SocketIO, emit
 import threading
 import time
 from headtracking.mediapipe_copy import ForeheadTracking
-
+from servo.limitedServoController import LimitedServoController
 from servo.servo_control import ContinuousServoController
 
 last_mouse_move_time = None
@@ -21,6 +21,14 @@ video_tracking = True
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+tracker = ForeheadTracking()
+frame_count = 0
+motorX = LimitedServoController(14)
+motorY = LimitedServoController(18)
+
+lastX = 0
+lastY = 0
+
 # OpenCV video capture (Use 0 for USB camera, or change based on your setup)
 #cap = cv2.VideoCapture(0)
 
@@ -28,30 +36,14 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 def index():
     return render_template('index.html')
 
-def move_turret(command_array):
-    if (command_array is None or len(command_array) <= 0):
-        return
-    if (command_array[0] == "Fire"):
-        print("Fire") # TODO: replace with actual fire logic
-        return
-    if (command_array[0] == "Left"):
-        pass #TODO: left movement
-    elif (command_array[0] == "Right"):
-        pass #TODO: right movement
 
-    if (command_array[2] == "Up"):
-        angle += int(command_array[3])
-        #set_servo_angle(angle)
-    elif (command_array[2] == "Down"):
-        angle -= int(command_array[3])
-        #set_servo_angle(angle)
 
-    
+
 def generate_video():
     global angle
     global video_tracking
     while True:
-        frame, command = track.track_forehead()
+        frame, command = tracker.track_forehead()
         if frame is None:
             print("[WARN] No frame captured")
             continue
@@ -62,6 +54,8 @@ def generate_video():
         if (video_tracking and command):
             move_turret(command.split(','))
         eventlet.sleep(0.02)  # 20 FPS cap
+
+
 
 @socketio.on('motor_control')
 def handle_motor_control(data):
@@ -89,7 +83,7 @@ def handle_motor_control(data):
                 direction = "backward"
             else:
                 direction = "forward"
-            #motorY.move(direction, 0.5)
+            motorY.move_slowly(230, 5, 0.2)
 
 
 @socketio.on('mouse_move')
@@ -101,6 +95,24 @@ def handle_mouse_move(data):
     last_mouse_move_time = time.time()
 #    last_mouse_move_time = time.monotonic()
 
+    global motorX
+    global motorY
+
+    global lastX
+    global lastY
+
+    difX = lastX - data['x']
+    difY = lastY - data['y']
+
+    lastX = data['x']
+    lastY = data['y']
+    print("moving")
+    motorX.move_slowly(motorX.current_angle + (difX * 5), 1, 0.05)
+    motorY.move_slowly(motorY.current_angle + (difY * 5), 1, 0.05)
+
+
+    #motorX.current_angle
+    """
     if data['x'] == motorX.lastPos:
         motorX.stop()
     else:
@@ -133,25 +145,52 @@ def handle_mouse_move(data):
             print(speedX)
             motorX.move(direction, speedX)
         motorX.lastPos = data['x']
+    """
 
 def stop_motor_if_idle():
     global last_mouse_move_time
+    """
     while True:
         eventlet.sleep(MOUSE_TIMEOUT)
 #        if last_mouse_move_time and (time.monotonic() - last_mouse_move_time > MOUSE_TIMEOUT):
         if last_mouse_move_time and (time.time() - last_mouse_move_time > MOUSE_TIMEOUT):
             motorX.stop()
             last_mouse_move_time = None
+    """
+
+def move_turret(command_array):
+    global frame_count
+    frame_count += 1
+    if frame_count % 3 != 0:
+        return
+    global motorX
+    global motorY
+
+    if (command_array is None or len(command_array) <= 0):
+        return
+    if (command_array[0] == "Fire"):
+        print("Fire") # TODO: replace with actual fire logic
+        return
+    if (command_array[0] == "Left"):
+        #print("left")
+        thread_left = threading.Thread(target=motorX.set_angle, args=(motorX.current_angle - int(command_array[1]),))
+        thread_left.start()
+    elif (command_array[0] == "Right"):
+        #print("right")
+        thread_right = threading.Thread(target=motorX.set_angle, args=(motorX.current_angle + int(command_array[1]),))
+        thread_right.start()
+    if (command_array[2] == "Up"):
+        thread_up = threading.Thread(target=motorY.set_angle, args=(motorY.current_angle + int(command_array[1]),))
+        thread_up.start()
+    elif (command_array[2] == "Down"):
+        thread_down = threading.Thread(target=motorY.set_angle, args=(motorY.current_angle - int(command_array[1]),))
+        thread_down.start()
 
 
 if __name__ == "__main__":
-    #eventlet.spawn(generate_video)  # Run video stream in a separate thread
-    motorX = ContinuousServoController(18)
+    eventlet.spawn(generate_video)  # Run video stream in a separate thread
+    #motorX = ContinuousServoController(18)
+    #motorY = LimitedServoController(23)
     eventlet.spawn(stop_motor_if_idle)
     print("starting run")
-    track = ForeheadTracking()
-
-    angle = 90
-    set_servo_angle(angle)
-    frame = track.track_forehead()
     socketio.run(app, host="0.0.0.0", port=5000)
