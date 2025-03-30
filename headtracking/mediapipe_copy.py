@@ -65,7 +65,7 @@ class ForeheadTracking:
         if (predicted_y - center_y > 0):
             res = -res
         
-        return res
+        return round(res)
     
     def calculate_horizontal_degree_offset(self, predicted_x, center_x, frame_width=320, half_horizontal_fov=48.805):
         half_horziontal_fov_radians = math.radians(half_horizontal_fov)
@@ -75,8 +75,8 @@ class ForeheadTracking:
 
         if (predicted_x - center_x < 0):
             res = -res
-        print("Predicted x: " + str(predicted_x) + ", Center x: " + str(center_x))
-        return res
+        print(f"Predicted x: {predicted_x}, Center x: {center_x}, Offset: {round(res)}")
+        return round(res)
 
     def track_forehead(self):
         start_time = time.time()
