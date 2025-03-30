@@ -39,12 +39,12 @@ def move_turret(command_array):
     elif (command_array[0] == "Right"):
         pass #TODO: right movement
 
-    if (command_array[1] == "Up"):
-        angle += float(command_array[2])
-        set_servo_angle(angle)
-    elif (command_array[1] == "Down"):
-        angle -= float(command_array[2])
-        set_servo_angle(angle)
+    if (command_array[2] == "Up"):
+        angle += float(command_array[3])
+        #set_servo_angle(angle)
+    elif (command_array[2] == "Down"):
+        angle -= float(command_array[3])
+        #set_servo_angle(angle)
 
     
 def generate_video():

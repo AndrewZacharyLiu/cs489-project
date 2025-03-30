@@ -2,6 +2,7 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import time
+import math
 
 class ForeheadTracking:
     def __init__(self):
@@ -55,10 +56,27 @@ class ForeheadTracking:
         self.rgb_frame = None
         self.last_results = None
 
-    def calculate_degree_offset(predicted_y, center_y, frame_height=240, vertical_fov=55.8):
-        degrees_per_pixel = vertical_fov / frame_height
-        degree_offset = (predicted_y - center_y) * degrees_per_pixel
-        return abs(degree_offset)
+    def calculate_vertical_degree_offset(predicted_y, center_y, frame_height=240, half_vertical_fov=40.595):
+        half_vertical_fov_radians = math.radians(half_vertical_fov)
+        z = ((frame_height/2) / math.tan(half_vertical_fov_radians)) # "distance from projection plane"
+
+        res = math.degrees(math.atan((abs(predicted_y - center_y)) / z))
+
+        if (predicted_y - center_y < 0):
+            res = -res
+        
+        return res
+    
+    def calculate_horizontal_degree_offset(predicted_x, center_x, frame_width=320, half_horizontal_fov=48.805):
+        half_horziontal_fov_radians = math.radians(half_horizontal_fov)
+        z = ((frame_width/2) / math.tan(half_horziontal_fov_radians)) # "distance from projection plane"
+
+        res = math.degrees(math.atan((abs(predicted_x - center_x)) / z))
+
+        if (predicted_x - center_x < 0):
+            res = -res
+        
+        return res
 
     def track_forehead(self):
         start_time = time.time()
@@ -106,18 +124,18 @@ class ForeheadTracking:
                 command += "Fire"
             else:
                 if predicted_x < center_x:
-                    command += "Left,"
+                    command += "Left," + str(self.calculate_horizontal_degree_offset(predicted_x, center_x)) + ","
                 elif predicted_x > center_x:
-                    command += "Right,"
+                    command += "Right," + str(self.calculate_horizontal_degree_offset(predicted_x, center_x)) + ","
                 else:
-                    command += "XGood,"
+                    command += "XGood,0,"
                 
                 if predicted_y < center_y:
-                    command += "Up," + str(self.calculate_degree_offset(predicted_y, center_y))
+                    command += "Up," + str(self.calculate_vertical_degree_offset(predicted_y, center_y))
                 elif predicted_y > center_y:
-                    command += "Down," + str(self.calculate_degree_offset(predicted_y, center_y))
+                    command += "Down," + str(self.calculate_vertical_degree_offset(predicted_y, center_y))
                 else:
-                    command += "YGood"
+                    command += "YGood,0"
             cv2.putText(frame, command, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
 
