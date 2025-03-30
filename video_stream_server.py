@@ -40,10 +40,10 @@ def move_turret(command_array):
         pass #TODO: right movement
 
     if (command_array[2] == "Up"):
-        angle += float(command_array[3])
+        angle += int(command_array[3])
         #set_servo_angle(angle)
     elif (command_array[2] == "Down"):
-        angle -= float(command_array[3])
+        angle -= int(command_array[3])
         #set_servo_angle(angle)
 
     

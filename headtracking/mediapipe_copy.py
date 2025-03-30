@@ -62,8 +62,8 @@ class ForeheadTracking:
 
         res = math.degrees(math.atan((abs(predicted_y - center_y)) / z))
 
-        if (predicted_y - center_y > 0):
-            res = -res
+        #if (predicted_y - center_y > 0):
+        #    res = -res
         
         return round(res)
     
@@ -73,8 +73,9 @@ class ForeheadTracking:
 
         res = math.degrees(math.atan((abs(predicted_x - center_x)) / z))
 
-        if (predicted_x - center_x < 0):
-            res = -res
+        #if (predicted_x - center_x < 0):
+        #    res = -res
+        
         print(f"Predicted x: {predicted_x}, Center x: {center_x}, Offset: {round(res)}")
         return round(res)
 
