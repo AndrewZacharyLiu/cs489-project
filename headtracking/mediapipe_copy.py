@@ -56,7 +56,7 @@ class ForeheadTracking:
         self.rgb_frame = None
         self.last_results = None
 
-    def calculate_vertical_degree_offset(self, predicted_y, center_y, frame_height=480, half_vertical_fov=40.595):
+    def calculate_vertical_degree_offset(self, predicted_y, center_y, frame_height=480, half_vertical_fov=22.78845):
         half_vertical_fov_radians = math.radians(half_vertical_fov)
         z = ((frame_height/2) / math.tan(half_vertical_fov_radians)) # "distance from projection plane"
 
@@ -67,7 +67,7 @@ class ForeheadTracking:
 
         return round(res)
 
-    def calculate_horizontal_degree_offset(self, predicted_x, center_x, frame_width=640, half_horizontal_fov=48.805):
+    def calculate_horizontal_degree_offset(self, predicted_x, center_x, frame_width=640, half_horizontal_fov=29.25605):
         half_horziontal_fov_radians = math.radians(half_horizontal_fov)
         z = ((frame_width/2) / math.tan(half_horziontal_fov_radians)) # "distance from projection plane"
 
