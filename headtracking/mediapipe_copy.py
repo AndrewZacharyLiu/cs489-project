@@ -24,7 +24,8 @@ class ForeheadTracking:
         self.frame_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.frame_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.center = (self.frame_width // 2, self.frame_height // 2)
-
+        self.fire_threshold = 35 #pixel radius from center to fire.
+        self.xy_pixel_threshold = 7 #prevents tiny microadjustments when centered.
         # FPS Control
         self.TARGET_FPS = 20
         self.FRAME_TIME = 1.0 / self.TARGET_FPS
@@ -117,26 +118,26 @@ class ForeheadTracking:
             cv2.circle(frame, (predicted_x, predicted_y), 4, (0, 0, 255), -1)
 
             #draw crosshair
-            cv2.circle(frame, self.center, 10, (255, 0, 0), 2)
+            cv2.circle(frame, self.center, self.fire_threshold, (255, 0, 0), 2)
             center_x, center_y = self.center
             distance = np.sqrt((predicted_x - center_x) ** 2 + (predicted_y - center_y) ** 2)
 
-            if distance < 10:
+            if distance < self.fire_threshold:
                 command += "Fire"
             else:
-                if predicted_x < center_x:
-                    command += "Left," + str(self.calculate_horizontal_degree_offset(predicted_x, center_x)) + ","
-                elif predicted_x > center_x:
-                    command += "Right," + str(self.calculate_horizontal_degree_offset(predicted_x, center_x)) + ","
-                else:
+                if abs(predicted_x - center_x) < self.xy_pixel_threshold:
                     command += "XGood,0,"
-
-                if predicted_y < center_y:
-                    command += "Up," + str(self.calculate_vertical_degree_offset(predicted_y, center_y))
-                elif predicted_y > center_y:
-                    command += "Down," + str(self.calculate_vertical_degree_offset(predicted_y, center_y))
+                elif predicted_x < center_x:
+                    command += "Left," + str(self.calculate_horizontal_degree_offset(predicted_x, center_x)) + ","
                 else:
+                    command += "Right," + str(self.calculate_horizontal_degree_offset(predicted_x, center_x)) + ","
+
+                if abs(predicted_y - center_y) < self.xy_pixel_threshold:
                     command += "YGood,0"
+                elif predicted_y < center_y:
+                    command += "Up," + str(self.calculate_vertical_degree_offset(predicted_y, center_y))
+                else:
+                    command += "Down," + str(self.calculate_vertical_degree_offset(predicted_y, center_y))
             cv2.putText(frame, command, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
 
