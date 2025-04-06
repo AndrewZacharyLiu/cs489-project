@@ -180,10 +180,10 @@ def move_turret(command_array):
         thread_right = threading.Thread(target=motorX.set_angle, args=(motorX.current_angle + int(command_array[1]),))
         thread_right.start()
     if (command_array[2] == "Up"):
-        thread_up = threading.Thread(target=motorY.set_angle, args=(motorY.current_angle + int(command_array[1]),))
+        thread_up = threading.Thread(target=motorY.set_angle, args=(motorY.current_angle + int(command_array[3]),))
         thread_up.start()
     elif (command_array[2] == "Down"):
-        thread_down = threading.Thread(target=motorY.set_angle, args=(motorY.current_angle - int(command_array[1]),))
+        thread_down = threading.Thread(target=motorY.set_angle, args=(motorY.current_angle - int(command_array[3]),))
         thread_down.start()
 
 
