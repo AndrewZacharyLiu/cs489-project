@@ -77,6 +77,15 @@
 			var socket = io.connect('http://localhost:5000', {
 				transports: ['websocket'],
 			});*/
+			const videoStream = document.getElementById("video-stream");
+
+			videoStream.addEventListener("click", function(event) {
+				const rect = videoStream.getBoundingClientRect();
+				const x = event.clientX - rect.left;
+				const y = event.clientY - rect.top;
+				console.log(`Click on video: x=${x}, y=${y}`);
+				socket.emit("click_video", { x:x, y:y });
+			});
 
 			// Store key states to prevent duplicate press events
 			var keyStates = {};
