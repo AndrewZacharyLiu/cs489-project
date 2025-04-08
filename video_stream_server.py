@@ -85,6 +85,25 @@ def handle_motor_control(data):
                 direction = "forward"
             motorY.move_slowly(230, 5, 0.2)
 
+@socketio.on('click_video')
+def handle_click_video(data):
+    center_x, center_y = tracker.center
+    movex = tracker.calculate_horizontal_degree_offset(data['x'], center_x)
+    movey = tracker.calculate_vertical_degree_offset(data['y'], center_y)
+
+    if (data['x'] - center_x > 0): #right
+        thread_right = threading.Thread(target=motorX.set_angle, args=(motorX.current_angle + movex,))
+        thread_right.start()
+    else: # Left
+        thread_left = threading.Thread(target=motorX.set_angle, args=(motorX.current_angle - movex,))
+        thread_left.start()
+    if (data['y'] - center_y < 0): #up
+        thread_up = threading.Thread(target=motorY.set_angle, args=(motorY.current_angle + movey,))
+        thread_up.start()
+    else: # down
+        thread_down = threading.Thread(target=motorY.set_angle, args=(motorY.current_angle - movey,))
+        thread_down.start()
+
 
 @socketio.on('mouse_move')
 def handle_mouse_move(data):
