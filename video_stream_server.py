@@ -105,6 +105,11 @@ def handle_click_video(data):
         thread_down.start()
 
 
+@socketio.on('toggle_tracking')
+def handle_toggle_tracking(data):
+    global video_tracking
+    video_tracking = data['state']
+
 @socketio.on('mouse_move')
 def handle_mouse_move(data):
     #print(f"Mouse moved: {data}")  # Logs mouse movement

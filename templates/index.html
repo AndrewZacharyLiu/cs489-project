@@ -28,13 +28,15 @@
 	</head>
 	<body>
 		<h1>Live Video Stream</h1>
-		/*
+		
 		<img
 			id="video-stream"
 			src=""
 			width="640"
 			height="480" />
-		*/
+		<button id="toggle-tracking" onclick="toggleTracking()">
+			Toggle Tracking
+			</button>
 		<h2>Motor Controls</h2>
 		<div id="controls">
 			<div class="control-row">
@@ -89,6 +91,7 @@
 
 			// Store key states to prevent duplicate press events
 			var keyStates = {};
+			window.trackingEnabled = true;
 
 			// Receive and display video stream
 			socket.on('video_stream', function (data) {
@@ -96,6 +99,21 @@
 					'data:image/jpeg;base64,' + data.image;
 			});
 
+			function toggleTracking() {
+				window.trackingEnabled = !window.trackingEnabled;
+			
+				if (window.trackingEnabled) {
+					console.log("Tracking is now ON");
+					socket.emit('toggle_tracking', {
+						state: true,
+					});
+				} else {
+					console.log("Tracking is now OFF");
+					socket.emit('toggle_tracking', {
+						state: false,
+					});
+				}
+			}
 			// Send motor control signals
 			function sendControl(direction, state) {
 				socket.emit('motor_control', {
