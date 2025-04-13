@@ -34,7 +34,7 @@
 			src=""
 			width="640"
 			height="480" />
-		<button id="toggle-tracking" onclick="toggleTracking()">
+		<button id="toggle-face-tracking" onclick="toggleFaceTracking()">
 			Toggle Tracking
 			</button>
 		<h2>Motor Controls</h2>
@@ -74,6 +74,7 @@
 		<button id="toggle-tracking">Start Tracking</button>
 
 		<script>
+			let facetracking = true;
 			var socket = io.connect('http://' + document.domain + ':5000');
 			/*// var socket = io.connect('http://10.150.27.210:5000');
 			var socket = io.connect('http://localhost:5000', {
@@ -91,7 +92,6 @@
 
 			// Store key states to prevent duplicate press events
 			var keyStates = {};
-			window.trackingEnabled = true;
 
 			// Receive and display video stream
 			socket.on('video_stream', function (data) {
@@ -99,10 +99,9 @@
 					'data:image/jpeg;base64,' + data.image;
 			});
 
-			function toggleTracking() {
-				window.trackingEnabled = !window.trackingEnabled;
-			
-				if (window.trackingEnabled) {
+			function toggleFaceTracking() {
+				facetracking = !facetracking;
+				if (facetracking) {
 					console.log("Tracking is now ON");
 					socket.emit('toggle_tracking', {
 						state: true,
@@ -156,10 +155,6 @@
 					? 'Stop Tracking (esc)'
 					: 'Start Tracking';
 			}
-
-			document
-				.getElementById('toggle-tracking')
-				.addEventListener('click', toggleTracking);
 
 			// Handle escape out of mouse tracking mode
 			document.addEventListener('keydown', function (event) {
